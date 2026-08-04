@@ -231,6 +231,8 @@ void CDragStateController::dragEnd() {
         m_dragMode            = MBIND_INVALID;
         m_exclusiveDeviceGrab = false;
         m_forcedGrabbedCorner.reset();
+        if (g_pInputManager)
+            g_pInputManager->simulateMouseMovement();
         return;
     }
 
@@ -253,6 +255,8 @@ void CDragStateController::dragEnd() {
                 m_dragMode            = MBIND_INVALID;
                 m_exclusiveDeviceGrab = false;
                 m_forcedGrabbedCorner.reset();
+                if (g_pInputManager)
+                    g_pInputManager->simulateMouseMovement();
                 return;
             }
 
@@ -293,6 +297,8 @@ void CDragStateController::dragEnd() {
     m_dragMode            = MBIND_INVALID;
     m_exclusiveDeviceGrab = false;
     m_forcedGrabbedCorner.reset();
+    if (g_pInputManager)
+        g_pInputManager->simulateMouseMovement();
 }
 
 void CDragStateController::mouseMove(const Vector2D& mousePos) {
