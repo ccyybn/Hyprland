@@ -1030,6 +1030,18 @@ void IHyprRenderer::renderLayer(PHLLS pLayer, PHLMONITOR pMonitor, const Time::s
 }
 
 void IHyprRenderer::renderIMEPopup(CInputPopup* pPopup, PHLMONITOR pMonitor, const Time::steady_tp& time) {
+    const auto PFOCUSEDTI = g_pInputManager->m_relay.getFocusedTextInput();
+    if (PFOCUSEDTI) {
+        if (!PFOCUSEDTI->hasCursorRectangle()) {
+            Log::logger->log(Log::DEBUG, "[IME-Fix] BLOCKED: Transient IME frame dismissed. Client has focus but cursor rectangle is NOT ready yet.");
+            return;
+        } else {
+            Log::logger->log(Log::DEBUG, "[IME-Fix] PASSED: IME frame rendered normally. Cursor rectangle is valid.");
+        }
+    } else {
+        Log::logger->log(Log::DEBUG, "[IME-Fix] PASSED: IME frame rendered, but PFOCUSEDTI is null (no focused text input context).");
+    }
+
     const auto                       POS = pPopup->globalBox().pos();
 
     CSurfacePassElement::SRenderData renderdata = {pMonitor, time, POS};
