@@ -2745,6 +2745,32 @@ void CWindow::commitWindow() {
 
         if (clampWindowSize(MINSIZE, MAXSIZE > Vector2D{1, 1} ? std::optional<Vector2D>{MAXSIZE} : std::nullopt))
             g_pHyprRenderer->damageWindow(m_self.lock());
+
+        const auto CLIENT_GEOMETRY = m_xdgSurface->m_current.geometry;
+        const Vector2D CLIENT_SIZE = {CLIENT_GEOMETRY.width, CLIENT_GEOMETRY.height};
+
+        const bool BEING_DRAGGED = g_layoutManager && g_layoutManager->dragController() && 
+                                   g_layoutManager->dragController()->target() == layoutTarget();
+
+        if (!BEING_DRAGGED && CLIENT_SIZE.x > 0 && CLIENT_SIZE.y > 0 && CLIENT_SIZE != m_realSize->goal()) {
+            Log::logger->log(Log::DEBUG, "[Floating Resize] Client dynamic resize: {}x{} for {}", CLIENT_SIZE.x, CLIENT_SIZE.y, m_self.lock());
+
+            *m_realSize = CLIENT_SIZE;
+
+            if (layoutTarget()) {
+                CBox currentBox = {m_realPosition->goal(), CLIENT_SIZE};
+                layoutTarget()->setPositionGlobal(currentBox, Layout::TARGET_UPDATE_NO_CLIENT_CONFIGURE);
+            }
+
+            Desktop::floatState()->remember(m_self.lock(), CLIENT_SIZE);
+
+            updateWindowDecos();
+            if (g_layoutManager)
+                g_layoutManager->recalculateMonitor(m_monitor.lock());
+
+            g_pHyprRenderer->damageWindow(m_self.lock());
+        }
+
     }
 
     if (!m_workspace->m_visible)
